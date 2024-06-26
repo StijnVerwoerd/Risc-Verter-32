@@ -6,7 +6,7 @@
 #define FORMATLEN 6
 
 // List of formats
-const int formatNumber[6];
+extern const int formatNumber[6];
 extern const char *Formats[];
 extern const char **pFormats[]; // format pointers
 extern const size_t formatSizes[]; //size of arrays

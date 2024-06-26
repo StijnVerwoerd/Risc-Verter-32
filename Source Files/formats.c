@@ -7,14 +7,7 @@
 const int formatNumber[6] = {0, 1, 2, 3, 4, 5};
 const char *Formats[] = {"R", "S", "I", "SB", "U", "UJ"};
 const char **pFormats[] = {Rformat, Sformat, Iformat, SBformat, Uformat, UJformat};
-const size_t formatSizes[] = {
-    sizeof(Rformat) / sizeof(Rformat[0]),
-    sizeof(Sformat) / sizeof(Sformat[0]),
-    sizeof(Iformat) / sizeof(Iformat[0]),
-    sizeof(SBformat) / sizeof(SBformat[0]),
-    sizeof(Uformat) / sizeof(Uformat[0]),
-    sizeof(UJformat) / sizeof(UJformat[0])
-};
+const size_t formatSizes[] = {10, 3, 14, 6, 2, 1};
 
 // R-type format
 const char *Rformat[] = {"ADD", "SUB", "SLT", "SLTU", "AND", "OR", "XOR", "SLL", "SRL", "SRA"};

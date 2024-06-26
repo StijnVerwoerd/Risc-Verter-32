@@ -6,11 +6,11 @@
 int main (void) {
     //request file and open it
     char *filename = requestFileName();
-    FILE *fileToAssemble = openFile(filename, 'r');
+    FILE *fileToAssemble = openFile(filename, "r");
 
     // create destionation file
     char *newFileName = newFileNameGenerator(filename);
-    FILE *newFile = openFile(newFileName, 'w');
+    FILE *newFile = openFile(newFileName, "w");
     free(filename);
     free(newFileName);
 
@@ -19,8 +19,8 @@ int main (void) {
     // function should split each line and place it in an array
     // format of the instruction should be called through function
     // correct function should be called to assemble the data and write it to the file(newFile)
-    char *fileData = readFile(fileToAssemble);
-    assembleLines(fileData);
+    char **fileData = readFile(fileToAssemble);
+    assembleLines(fileData, newFile);
 
 
     // Close file and exit program succesfully
