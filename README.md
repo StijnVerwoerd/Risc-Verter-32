@@ -1,17 +1,22 @@
-# 32-bit RISC-V ISA Assembler
+# 32-bit RISC-V Assembler 
 
 A simple assembler
 
-* Currently only supports R-type instructions
+* Only supports assembly to binary
 * Does not support labels
-* Only supports uppercase instructions
+* Only supports uppercase instructions with lowercases register
+* Does not support psuedo instructions
+* Does not support register aliases
 
-## List of things to do
+## To-do List
 
-* Remove case sensititivty
-* Add support for all instruction types
+* Remove case sensitivity
+* Add support for register aliases and psuedo instructions
+* Add support for label decoding
+* Add support for binary to assembly
+* Add support for hexadecimal values, both ways
 * Refactor, clean up and improve code
-* Add a simple  UI
+* Add an UI
 
 
 ## Program Data Flow

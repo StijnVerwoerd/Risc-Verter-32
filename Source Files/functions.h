@@ -33,11 +33,11 @@ char **binaryStringShuffler(char *binaryString);
 
 
 // Assembler functions 
-void AssemblerTypeR(char **strings, FILE *newFile); /*
-void AssemblerTypeS(char **strings);
-void AssemblerTypeI(char **strings);
-void AssemblerTypeSB(char **strings);
-void AssemblerTypeU(char **strings);
-void AssemblerTypeUJ(char **strings);
-*/
+void AssemblerTypeR(char **strings, FILE *newFile); 
+void AssemblerTypeS(char **strings, FILE *newFile);
+void AssemblerTypeI(char **strings, FILE *newFile);
+void AssemblerTypeSB(char **strings, FILE *newFile);
+void AssemblerTypeU(char **strings, FILE *newFile); 
+void AssemblerTypeUJ(char **strings, FILE *newFile);
+
 #endif

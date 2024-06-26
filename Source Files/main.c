@@ -10,19 +10,15 @@ int main (void) {
 
     // create destionation file
     char *newFileName = newFileNameGenerator(filename);
-    FILE *newFile = openFile(newFileName, "w");
     free(filename);
+    FILE *newFile = openFile(newFileName, "w");
     free(newFileName);
 
-
-    // function to go over each line untill there are no more lines
-    // function should split each line and place it in an array
-    // format of the instruction should be called through function
-    // correct function should be called to assemble the data and write it to the file(newFile)
+    // read and assemble file
     char **fileData = readFile(fileToAssemble);
     assembleLines(fileData, newFile);
 
-
+    //printf("%s created succesfully\n", newFileName);
     // Close file and exit program succesfully
     return 0;
 }
