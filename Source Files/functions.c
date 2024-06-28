@@ -6,8 +6,6 @@
 #include "functions.h"
 #include "formats.h"
 
-int lineCount = 0;
-
 
 char *requestFileName(void) { 
     char *file = malloc(100 * sizeof(char));
@@ -74,7 +72,7 @@ char *newFileNameGenerator(char *tempName) {
     return newString;
 }
 
-char **readFile(FILE *fileToRead) {
+char **readFile(FILE *fileToRead, int lineCount) {
     int arraySize = 10;
     char buffer[32];
     
@@ -121,7 +119,7 @@ char **readFile(FILE *fileToRead) {
     return(instructionLines);
 }
 
-void assembleLines(char **arrayOfLines, FILE *newFile) {
+void assembleLines(char **arrayOfLines, FILE *newFile, int lineCount) {
     for (int i = 0; i < lineCount; i++) {
          // splits the instruction string into individual parts
         char **tempInstruction = rearrangeString(arrayOfLines[i]);

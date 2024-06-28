@@ -15,8 +15,9 @@ int main (void) {
     free(newFileName);
 
     // read and assemble file
-    char **fileData = readFile(fileToAssemble);
-    assembleLines(fileData, newFile);
+    int lineCount = 0;
+    char **fileData = readFile(fileToAssemble, lineCount);
+    assembleLines(fileData, newFile, lineCount);
 
     // Close file and exit program succesfully
     return 0;
