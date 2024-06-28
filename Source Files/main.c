@@ -8,7 +8,7 @@ int main (void) {
     char *filename = requestFileName();
     FILE *fileToAssemble = openFile(filename, "r");
 
-    // create destionation file
+    // create destination file
     char *newFileName = newFileNameGenerator(filename);
     free(filename);
     FILE *newFile = openFile(newFileName, "w");
@@ -18,7 +18,6 @@ int main (void) {
     char **fileData = readFile(fileToAssemble);
     assembleLines(fileData, newFile);
 
-    //printf("%s created succesfully\n", newFileName);
     // Close file and exit program succesfully
     return 0;
 }
