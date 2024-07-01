@@ -21,7 +21,7 @@ int checkFormat(const char *instruction);
 //creates a new file name
 char *newFileNameGenerator(char *tempName);
 // reads each line and stores it in an array 
-char **readFile(FILE *fileToRead, int lineCount);
+char **readFile(FILE *fileToRead, int *lineCount);
 //goes through each line, deconstructs it and writes it to the new file
 void assembleLines(char **arrayOfLines, FILE *newFile, int lineCount);
 // turns a single string into an array of individual strings

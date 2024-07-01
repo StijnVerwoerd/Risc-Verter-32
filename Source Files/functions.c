@@ -72,7 +72,7 @@ char *newFileNameGenerator(char *tempName) {
     return newString;
 }
 
-char **readFile(FILE *fileToRead, int lineCount) {
+char **readFile(FILE *fileToRead, int *lineCount) {
     int arraySize = 10;
     char buffer[32];
     
@@ -87,12 +87,12 @@ char **readFile(FILE *fileToRead, int lineCount) {
         buffer[strcspn(buffer, "\n")] = '\0';
 
         // Resize array if needed
-        if (lineCount >= arraySize) {
+        if (*lineCount >= arraySize) {
             arraySize *= 2;
             char **temp = realloc(instructionLines, arraySize * sizeof(char *));
             if (temp == NULL) {
                 fprintf(stderr, "Memory allocation failed\n");
-                for (size_t i = 0; i < lineCount; i++) {
+                for (size_t i = 0; i < *lineCount; i++) {
                     free(instructionLines[i]);
                 }
                 free(instructionLines);
@@ -102,10 +102,10 @@ char **readFile(FILE *fileToRead, int lineCount) {
             instructionLines = temp;
         }
 
-        instructionLines[lineCount] = strdup(buffer);
-        if (instructionLines[lineCount] == NULL) {
+        instructionLines[*lineCount] = strdup(buffer);
+        if (instructionLines[*lineCount] == NULL) {
             perror("Failed to duplicate string");
-            for (size_t i = 0; i < lineCount; i++) {
+            for (size_t i = 0; i < *lineCount; i++) {
                 free(instructionLines[i]);
             }
             free(instructionLines);
@@ -113,7 +113,7 @@ char **readFile(FILE *fileToRead, int lineCount) {
             exit(4);
         }
 
-        lineCount++;
+        *lineCount = *lineCount + 1;
     }
     fclose(fileToRead);
     return(instructionLines);
