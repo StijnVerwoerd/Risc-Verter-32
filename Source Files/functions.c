@@ -159,10 +159,11 @@ char **rearrangeString(const char *string) {
     int i = 0;
 
     // while token is not null and i < 4
-    char *token = strtok(stringCopy, " ,()x");
+    char *token = strtok(stringCopy, " ,()xX");
     while (token != NULL) {
         dissectedString[i] = strdup(token);
         if (dissectedString[i] == NULL) {
+            perror("Failed to remove tokens");
             for (int j = 0; j < i; j++) {
                 free(dissectedString[j]);
             }
@@ -171,7 +172,7 @@ char **rearrangeString(const char *string) {
             exit(6);
         }
         i++;
-        token = strtok(NULL, " ,()x");
+        token = strtok(NULL, " ,()xX");
     }
     free(stringCopy);
 
@@ -194,9 +195,12 @@ char **rearrangeString(const char *string) {
 int checkFormat(const char *instruction) { 
     for (int i = 0; i < FORMATLEN; i++) {
         for (int j = 0; j < formatSizes[i]; j++) {
+            if (pFormats[i][j] == NULL) {
+                fprintf(stderr, "Error: pFormats[%d][%d] is NULL\n", i, j);
+                continue;}
             if (strcmp(instruction, pFormats[i][j]) == 0) { 
                 return formatNumber[i];
-            }
+            } 
         }
     }
 }
@@ -246,7 +250,7 @@ char *intToBinaryStr(char *intStr, int bitLen, char *buffer) {
     }
 
     buffer[bitLen] = '\0';
-
+    
     return buffer;
 }
 

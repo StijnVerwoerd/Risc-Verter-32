@@ -1,6 +1,6 @@
 
 assembler: main.o functions.o formats.o
-	gcc main.o functions.o formats.o -o assembler
+	gcc -g main.o functions.o formats.o -o assembler
 
 main.o: main.c functions.h formats.h
 	gcc -c main.c

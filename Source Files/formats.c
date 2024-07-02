@@ -3,11 +3,6 @@
 #include <stdlib.h>
 #include "formats.h"
 
-// List of formats
-const int formatNumber[6] = {0, 1, 2, 3, 4, 5};
-const char *Formats[] = {"R", "S", "I", "SB", "U", "UJ"};
-const char **pFormats[] = {Rformat, Sformat, Iformat, SBformat, Uformat, UJformat};
-const size_t formatSizes[] = {10, 3, 14, 6, 2, 1};
 
 // R-type format
 const char *Rformat[] = {"ADD", "SUB", "SLT", "SLTU", "AND", "OR", "XOR", "SLL", "SRL", "SRA"};
@@ -43,3 +38,8 @@ const char *UformatOpcode[] = {"0110111", "0010111"};
 const char *UJformat[] = {"JAL"};
 const char *UJformatOpcode[] = {"1101111"};
 
+// List of formats
+const int formatNumber[6] = {0, 1, 2, 3, 4, 5};
+const char *Formats[] = {"R", "S", "I", "SB", "U", "UJ"};
+const char **pFormats[] = {Rformat, Sformat, Iformat, SBformat, Uformat, UJformat};
+const size_t formatSizes[] = {10, 3, 14, 6, 2, 1};
