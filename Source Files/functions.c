@@ -332,8 +332,8 @@ void AssemblerTypeI(char **strings, FILE *newFile) {
     char rs1[6] = {0};
     char rd[6] = {0};
 
-    intToBinaryStr(strings[3], 12, imm);
-    intToBinaryStr(strings[2], 5, rs1);
+    intToBinaryStr(strings[2], 12, imm);
+    intToBinaryStr(strings[3], 5, rs1);
     intToBinaryStr(strings[1], 5, rd);
 
     // Find correct codes in formats and insert correct values in the final string
