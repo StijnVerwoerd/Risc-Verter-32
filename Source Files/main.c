@@ -8,6 +8,8 @@ int main (void) {
     char *filename = requestFileName();
     FILE *fileToAssemble = openFile(filename, "r");
 
+    // Ask if you want to encode or decode, and wether it's in binary or hexadecimal form.
+
     // create destination file
     char *newFileName = newFileNameGenerator(filename);
     free(filename);
