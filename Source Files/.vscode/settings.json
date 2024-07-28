@@ -1,0 +1,11 @@
+{
+    "files.associations": {
+        "stdlib.h": "c",
+        "stdio.h": "c",
+        "raygui.h": "c",
+        "string.h": "c",
+        "stddef.h": "c",
+        "style_terminal.h": "c",
+        "functions.h": "c"
+    }
+}

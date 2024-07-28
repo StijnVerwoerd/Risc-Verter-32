@@ -5,6 +5,127 @@
 #include <ctype.h>
 #include "functions.h"
 #include "formats.h"
+#include "../raylib/src/raylib.h"
+#define RAYGUI_IMPLEMENTATION
+#include "../raygui/src/raygui.h"
+#include "../raygui/styles/terminal/style_terminal.h"
+
+// Screen dimensions -------------------------------------------------------------------------------------------
+const int screenWidth = 784;
+const int screenHeight = 792;
+
+// initialize buttons ------------------------------------------------------------------------------------------
+button openFileButton = (button){ .bounds = (Rectangle){28, 24, 352, 24}, .text = "OPEN FILE", .clicked = false};
+button convertToBinaryButton = (button){ .bounds = (Rectangle){404, 24, 228, 24}, .text = "CONVERT TO BINARY", .clicked = false};
+button convertToHexButton = (button){ .bounds = (Rectangle){404, 408, 228, 24}, .text = "CONVERT TO HEX", .clicked = false};
+button saveBinaryButton = (button){ .bounds = (Rectangle){634, 24, 60, 24}, .text = "SAVE", .clicked = false};
+button copyBinaryButton = (button){ .bounds = (Rectangle){696, 24, 60, 24}, .text = "COPY", .clicked = false};
+button saveHexButton = (button){ .bounds = (Rectangle){634, 408, 60, 24}, .text = "SAVE", .clicked = false};
+button copyHexButton = (button){ .bounds = (Rectangle){696, 408, 60, 24}, .text = "COPY", .clicked = false};
+
+void beginDrawingUi(void){
+    BeginDrawing();
+}
+
+void endDrawingUi(void) {
+    EndDrawing();
+}
+
+void initGui(void) {
+
+    // initialize window --------------------------------------------------------------------------------------
+    SetTargetFPS(60);
+    InitWindow(screenWidth, screenHeight, "RV32I Assembler");
+    GuiLoadStyleTerminal();
+    ClearBackground(GetColor(GuiGetStyle(DEFAULT, BACKGROUND_COLOR))); 
+
+}
+
+void updateGui(void) {
+    
+    // buttons ----------------------------------------------------
+    if (GuiButton(openFileButton.bounds, openFileButton.text)) {
+        openFileButton.clicked = true;
+    }
+    if (GuiButton(convertToBinaryButton.bounds, convertToBinaryButton.text)) {
+        convertToBinaryButton.clicked = true;
+    }
+    if (GuiButton(convertToHexButton.bounds, convertToHexButton.text)) {
+        convertToHexButton.clicked = true;
+    }
+    if (GuiButton(saveBinaryButton.bounds, saveBinaryButton.text)) {
+        saveBinaryButton.clicked = true;
+    }
+    if (GuiButton(copyBinaryButton.bounds, copyBinaryButton.text)) {
+        copyBinaryButton.clicked = true;
+    }
+    if (GuiButton(saveHexButton.bounds, saveHexButton.text)) {
+        saveHexButton.clicked = true;
+    }
+    if (GuiButton(copyHexButton.bounds, copyHexButton.text)) {
+        copyHexButton.clicked = true;
+    }
+
+    // text fields -----------------------------------------------------------------
+
+}
+
+void drawGui(void) {
+
+
+    // draw panels --------------------------------------------------------------------------------------
+    // binary button box
+    GuiDrawRectangle((Rectangle){400, 20, 360, 32}, 2, (GetColor(GuiGetStyle(DEFAULT, BORDER_COLOR_NORMAL))),GetColor(GuiGetStyle(DEFAULT, BACKGROUND_COLOR)));
+    // hexadecimal button box
+    GuiDrawRectangle((Rectangle){400, 404, 360, 32}, 2, (GetColor(GuiGetStyle(DEFAULT, BORDER_COLOR_NORMAL))),GetColor(GuiGetStyle(DEFAULT, BACKGROUND_COLOR)));
+    // open file box
+    GuiDrawRectangle((Rectangle){24, 20, 360, 32}, 2, (GetColor(GuiGetStyle(DEFAULT, BORDER_COLOR_NORMAL))),GetColor(GuiGetStyle(DEFAULT, BACKGROUND_COLOR)));
+    
+    // Text boxes ------------------------------------------------------------------
+    GuiGroupBox((Rectangle){24, 64, 360, 704 }, "ASSEMBLY CODE");
+    GuiGroupBox((Rectangle){400, 64, 360, 328 }, "BINARY");
+    GuiGroupBox((Rectangle){400, 448, 360, 320 }, "HEXADECIMAL");
+
+    // draw buttons ----------------------------------------------------------------
+    GuiButton(openFileButton.bounds, openFileButton.text);
+    GuiButton(convertToBinaryButton.bounds, convertToBinaryButton.text);
+    GuiButton(convertToHexButton.bounds, convertToHexButton.text);
+    GuiButton(saveBinaryButton.bounds, saveBinaryButton.text);
+    GuiButton(copyBinaryButton.bounds, copyBinaryButton.text);
+    GuiButton(saveHexButton.bounds, saveHexButton.text);
+    GuiButton(copyHexButton.bounds, copyHexButton.text);
+
+    // button effects --------------------------------------------------------------
+    if (openFileButton.clicked) {
+        // opens window to select a file to load
+        // loads text into text field
+    }
+    if (convertToBinaryButton.clicked) {
+        // convert the loaded assembly file to binary if and ONLY if there is a file loaded
+        // load the binary code into the text field
+    }
+    if (convertToHexButton.clicked) {
+        // convert the loaded assembly file to hexadecimal if and ONLY if there is a file loaded
+        // load the hex code into the text field
+    }
+    if (saveBinaryButton.clicked) {
+        // Save binary code
+    }
+    if (copyBinaryButton.clicked) {
+        // copu binary code
+    }
+    if (saveHexButton.clicked) {
+        // Save hexadecimal code
+    }
+    if (copyHexButton.clicked) {
+        // copu hexadecimal code
+    }
+
+}
+
+void closeGui(void) {
+    CloseWindow();
+}
 
 
 char *requestFileName(void) { 

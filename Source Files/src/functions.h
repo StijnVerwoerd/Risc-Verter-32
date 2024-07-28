@@ -3,6 +3,9 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <stdbool.h>
+#include "../raylib/src/raylib.h"
+#include "../raygui/src/raygui.h"
 
 // amount of lines that have to be assembled
 extern int lineCount;
@@ -10,7 +13,42 @@ extern int lineCount;
 // new file
 extern FILE *newFile;
 
-// Function declarations
+// Function declarations -----------------------------------------------------------
+
+// Gui -----------------------------------------------------------------------------
+void beginDrawingUi(void);
+void endDrawingUi(void);
+void initGui(void);
+void updateGui(void);
+void drawGui(void);
+void closeGui(void);
+
+// Gui elements --------------------------------------------------------------------
+
+// button struct
+typedef struct {
+    Rectangle bounds;
+    const char *text;
+    bool clicked;
+} button;
+
+//buttons
+extern button openFileButton;
+extern button convertToBinaryButton;
+extern button saveBinaryButton;
+extern button copyBinaryButton;
+extern button convertToHexButton;
+extern button saveHexButton;
+extern button copyHexButton;
+
+// General functions --------------------------------------------------------------
+/*
+FILE *openFileWindow(void);
+char **convertToBinary(void);
+char **convertToHex(void);
+*/  
+
+// --------------------------------------------------------------------------------
 
 // To point out the obvious, this requests a user for the file
 char *requestFileName(void); 
