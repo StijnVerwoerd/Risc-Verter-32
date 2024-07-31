@@ -8,13 +8,17 @@
 #include "../raylib/src/raylib.h"
 #define RAYGUI_IMPLEMENTATION
 #include "../raygui/src/raygui.h"
-#include "../raygui/styles/terminal/style_terminal.h"
+#include "../raygui/styles/dark/style_dark.h"
 
-// Screen dimensions -------------------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------------------------//
+// Setup & global variables                                                                                          //
+//-------------------------------------------------------------------------------------------------------------------//
+
+// Screen dimensions --------------------------------------------------------------------
 const int screenWidth = 784;
 const int screenHeight = 792;
 
-// initialize buttons ------------------------------------------------------------------------------------------
+// initialize buttons -------------------------------------------------------------------
 button openFileButton = (button){ .bounds = (Rectangle){28, 24, 352, 24}, .text = "OPEN FILE", .clicked = false};
 button convertToBinaryButton = (button){ .bounds = (Rectangle){404, 24, 228, 24}, .text = "CONVERT TO BINARY", .clicked = false};
 button convertToHexButton = (button){ .bounds = (Rectangle){404, 408, 228, 24}, .text = "CONVERT TO HEX", .clicked = false};
@@ -23,27 +27,43 @@ button copyBinaryButton = (button){ .bounds = (Rectangle){696, 24, 60, 24}, .tex
 button saveHexButton = (button){ .bounds = (Rectangle){634, 408, 60, 24}, .text = "SAVE", .clicked = false};
 button copyHexButton = (button){ .bounds = (Rectangle){696, 408, 60, 24}, .text = "COPY", .clicked = false};
 
-void beginDrawingUi(void){
-    BeginDrawing();
-}
+// initialize file windows --------------------------------------------------------------
+window loadFileWindow = (window){ .bounds = (Rectangle){(screenWidth / 2 - 200), (screenHeight / 2 - 200), 400, 400}, .text = "LOAD FILE", .active = false};
+window saveBinaryWindow = (window){ .bounds = (Rectangle){(screenWidth / 2 - 200), (screenHeight / 2 - 200), 400, 400}, .text = "SAVE BINARY FILE", .active = false};
+window saveHexWindow = (window){ .bounds = (Rectangle){(screenWidth / 2 - 200), (screenHeight / 2 - 200), 400, 400}, .text = "SAVE HEX FILE", .active = false};
 
-void endDrawingUi(void) {
-    EndDrawing();
-}
+// text boxes ---------------------------------------------------------------------------
+bool assemblyText = false;
+bool binaryText = false;
+bool hexText = false;
+
+// Scroll variables ---------------------------------------------------------------------
+int scrollDistanceASM = 0;
+int scrollDistanceBin = 0;
+int scrollDistanceHex = 0;
+bool scrollButtonPressed = false;
+bool assemblyScrollActive = false;
+bool binaryScrollActive = false;
+bool hexScrollActive = false;
+
+// amount of lines of code of the file to be assembled ----------------------------------
+int lineCount = 0;
+
+//-------------------------------------------------------------------------------------------------------------------//
+// GUI Functions                                                                                                     //
+//-------------------------------------------------------------------------------------------------------------------//
 
 void initGui(void) {
 
-    // initialize window --------------------------------------------------------------------------------------
+    // Window initialization ------------------------------------------------------------
     SetTargetFPS(60);
     InitWindow(screenWidth, screenHeight, "RV32I Assembler");
-    GuiLoadStyleTerminal();
-    ClearBackground(GetColor(GuiGetStyle(DEFAULT, BACKGROUND_COLOR))); 
-
+    GuiLoadStyleDark();
 }
 
 void updateGui(void) {
     
-    // buttons ----------------------------------------------------
+    // saves button states --------------------------------------------------------------
     if (GuiButton(openFileButton.bounds, openFileButton.text)) {
         openFileButton.clicked = true;
     }
@@ -65,28 +85,114 @@ void updateGui(void) {
     if (GuiButton(copyHexButton.bounds, copyHexButton.text)) {
         copyHexButton.clicked = true;
     }
+}
 
-    // text fields -----------------------------------------------------------------
+void openFileWindow(void) {
+
+    // Cast dark layer over the rest of the UI ------------------------------------------
+    DrawRectangle(0,0,screenWidth,screenHeight, (Color){ 0, 0, 0, 100 });
+
+    // file windows ---------------------------------------------------------------------
+    if (GuiWindowBox(loadFileWindow.bounds, loadFileWindow.text)) {
+        openFileButton.clicked = false;
+    }
+
 
 }
 
-void drawGui(void) {
+void saveFileWindow(char type) {
 
+    // Cast dark layer over the rest of the UI ------------------------------------------
+    DrawRectangle(0,0,screenWidth,screenHeight, (Color){ 0, 0, 0, 100 });
 
-    // draw panels --------------------------------------------------------------------------------------
-    // binary button box
-    GuiDrawRectangle((Rectangle){400, 20, 360, 32}, 2, (GetColor(GuiGetStyle(DEFAULT, BORDER_COLOR_NORMAL))),GetColor(GuiGetStyle(DEFAULT, BACKGROUND_COLOR)));
-    // hexadecimal button box
-    GuiDrawRectangle((Rectangle){400, 404, 360, 32}, 2, (GetColor(GuiGetStyle(DEFAULT, BORDER_COLOR_NORMAL))),GetColor(GuiGetStyle(DEFAULT, BACKGROUND_COLOR)));
-    // open file box
-    GuiDrawRectangle((Rectangle){24, 20, 360, 32}, 2, (GetColor(GuiGetStyle(DEFAULT, BORDER_COLOR_NORMAL))),GetColor(GuiGetStyle(DEFAULT, BACKGROUND_COLOR)));
+    // depending on type of save window, loads the correct type -------------------------
+    if (type == 'b') {
+        if (GuiWindowBox(saveBinaryWindow.bounds, saveBinaryWindow.text)) {
+            saveBinaryButton.clicked = false;
+        }
+    }
+
+    if (type == 'h') {
+        if (GuiWindowBox(saveHexWindow.bounds, saveHexWindow.text)) {
+            saveHexButton.clicked = false;
+        }
+    }
+
+    //
+}
+
+void textScrollWindow(Rectangle controlBounds, const char *textField, int textLines, int *scrollDistance, bool *scrollActive) {
+
+    // scroll variables -----------------------------------------------------------------
+    int textHeight = textLines * 24;
+    int scrollBarLength = (textHeight - controlBounds.height);
+    int scissorX = controlBounds.x + 8, scissorY = controlBounds.y + 12, scissorWidth = controlBounds.width - 32, scissorHeight = controlBounds.height - 16;
+    Rectangle textBounds = {controlBounds.x + 12, controlBounds.y + 16, scissorWidth, textHeight};
+    Rectangle scrollBarBounds = {(controlBounds.x + controlBounds.width -24), controlBounds.y + 8, 16, controlBounds.height - 16};
     
-    // Text boxes ------------------------------------------------------------------
+    // If the mouse is pressed down and within bounds, it can drag the scroll bar -------
+    if (GetMouseY() > scrollBarBounds.y - 1&& 
+        GetMouseY() < scrollBarBounds.y + scrollBarBounds.height + 4 && 
+        IsMouseButtonDown(MOUSE_LEFT_BUTTON) &&
+        GetMouseX() > scrollBarBounds.x - 8 &&
+        GetMouseX() < scrollBarBounds.x + scrollBarBounds.width + 8) {
+
+        scrollButtonPressed = true;
+        *scrollActive = true;
+
+    // if the mouse button is not pressed down, no longer allow scrolling ---------------
+    } else if (!IsMouseButtonDown(MOUSE_LEFT_BUTTON)){
+        scrollButtonPressed = false;
+        *scrollActive = false;
+    }
+
+    // if the scroll button was pressed and the scroll set to active -------------------- 
+    // update the text and scrollwheel accordingly
+    if (scrollButtonPressed && *scrollActive == true) {
+        *scrollDistance = (GetMouseY() - scrollBarBounds.y) * ((scrollBarLength) / scrollBarBounds.height);
+        if (*scrollDistance < 0) {
+            *scrollDistance = 0;
+        } else if (*scrollDistance > scrollBarLength) {
+            *scrollDistance = scrollBarLength + 12;
+        }
+    }
+
+    // if there are less than 14 lines, do not draw a scrollbar -------------------------
+    if (textLines < 14) {
+        BeginScissorMode(scissorX, scissorY, scissorWidth, scissorHeight);
+            GuiDrawText(textField, (Rectangle){textBounds.x, textBounds.y, textBounds.width, textBounds.height}, 0, WHITE );
+        EndScissorMode();    
+    } else {
+        GuiScrollBar(scrollBarBounds, *scrollDistance, 0, scrollBarLength);
+        BeginScissorMode(scissorX, scissorY, scissorWidth, scissorHeight);
+            GuiDrawText(textField, (Rectangle){textBounds.x, scrollBarBounds.y - *scrollDistance, textBounds.width, textBounds.height}, 0, WHITE );
+        EndScissorMode();    
+    }
+}
+
+void drawGui(void) {
+    
+    // Disables the GUI underneath the file windows if they are enabled -----------------
+    if (openFileButton.clicked | saveBinaryButton.clicked | saveHexButton.clicked) {
+        GuiDisable();
+    } else {
+        GuiEnable();
+    }
+
+    // Draw background color ------------------------------------------------------------
+    ClearBackground(GetColor(GuiGetStyle(DEFAULT, BACKGROUND_COLOR))); 
+
+    // draw button panels ---------------------------------------------------------------
+    GuiDrawRectangle((Rectangle){400, 20, 360, 32}, 2, DARKMAROON,GetColor(GuiGetStyle(DEFAULT, BACKGROUND_COLOR)));    // binary button box
+    GuiDrawRectangle((Rectangle){400, 404, 360, 32}, 2, DARKORANGE,GetColor(GuiGetStyle(DEFAULT, BACKGROUND_COLOR)));   // hexadecimal button box
+    GuiDrawRectangle((Rectangle){24, 20, 360, 32}, 2, DARKGREEN,GetColor(GuiGetStyle(DEFAULT, BACKGROUND_COLOR)));      // open file box
+    
+    // Text box groups  -----------------------------------------------------------------
     GuiGroupBox((Rectangle){24, 64, 360, 704 }, "ASSEMBLY CODE");
     GuiGroupBox((Rectangle){400, 64, 360, 328 }, "BINARY");
     GuiGroupBox((Rectangle){400, 448, 360, 320 }, "HEXADECIMAL");
 
-    // draw buttons ----------------------------------------------------------------
+    // draw buttons ---------------------------------------------------------------------
     GuiButton(openFileButton.bounds, openFileButton.text);
     GuiButton(convertToBinaryButton.bounds, convertToBinaryButton.text);
     GuiButton(convertToHexButton.bounds, convertToHexButton.text);
@@ -95,38 +201,45 @@ void drawGui(void) {
     GuiButton(saveHexButton.bounds, saveHexButton.text);
     GuiButton(copyHexButton.bounds, copyHexButton.text);
 
-    // button effects --------------------------------------------------------------
+    // If the Gui was disabled by a file window
+    GuiEnable();
+
+    // button effects -------------------------------------------------------------------
     if (openFileButton.clicked) {
-        // opens window to select a file to load
-        // loads text into text field
+        openFileWindow();
+        textScrollWindow((Rectangle){24, 64, 360, 704}, "ASSEMBLY CODE", 24, &scrollDistanceASM, &assemblyScrollActive);
     }
     if (convertToBinaryButton.clicked) {
         // convert the loaded assembly file to binary if and ONLY if there is a file loaded
         // load the binary code into the text field
+        binaryText = true;
+        textScrollWindow((Rectangle){400, 64, 360, 328}, "ASSEMBLY CODE\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\n12\n13\n14\n15\n16\n17\n18\n19\n20", 20, &scrollDistanceBin, &binaryScrollActive);
     }
     if (convertToHexButton.clicked) {
-        // convert the loaded assembly file to hexadecimal if and ONLY if there is a file loaded
-        // load the hex code into the text field
+        hexText = true;
+        textScrollWindow((Rectangle){400, 448, 360, 320}, "ASSEMBLY CODE\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\n12\n13\n14\n15\n16\n17\n18\n19\n20\nASSEMBLY CODE\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\n12\n13\n14\n15\n16\n17\n18\n19\n20\nASSEMBLY CODE\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\n12\n13\n14\n15\n16\n17\n18\n19\n20\nASSEMBLY CODE\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\n12\n13\n14\n15\n16\n17\n18\n19\n20\nASSEMBLY CODE\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\n12\n13\n14\n15\n16\n17\n18\n19\n20\nASSEMBLY CODE\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\n12\n13\n14\n15\n16\n17\n18\n19\n20\nASSEMBLY CODE\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\n12\n13\n14\n15\n16\n17\n18\n19\n20", 128, &scrollDistanceHex, &hexScrollActive);
     }
     if (saveBinaryButton.clicked) {
-        // Save binary code
+        saveFileWindow('b');
+    }
+    if (saveHexButton.clicked) {
+        saveFileWindow('h');
     }
     if (copyBinaryButton.clicked) {
         // copu binary code
     }
-    if (saveHexButton.clicked) {
-        // Save hexadecimal code
-    }
     if (copyHexButton.clicked) {
         // copu hexadecimal code
     }
-
 }
 
-void closeGui(void) {
-    CloseWindow();
-}
+//-------------------------------------------------------------------------------------------------------------------//
+// Background Functions                                                                                              //
+//-------------------------------------------------------------------------------------------------------------------//
 
+void freeMemory(void){
+
+}
 
 char *requestFileName(void) { 
     char *file = malloc(100 * sizeof(char));
@@ -161,7 +274,6 @@ FILE *openFile(char *fileToOpen, const char *mode) {
     }
     return ASMfile;
 }
-
 
 char *newFileNameGenerator(char *tempName) {
     char toAppend[] = "_assembled";

@@ -1,6 +1,3 @@
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
 #include "functions.h"
 #include "../raylib/src/raylib.h"
 #include "../raygui/src/raygui.h"
@@ -13,14 +10,15 @@ int main (void) {
     // Main program loop
     while (!WindowShouldClose()) { // exits if window is closed or escape is pressed
 
-        beginDrawingUi();
+        BeginDrawing();
         updateGui();
         drawGui();
-        endDrawingUi();
+        EndDrawing();
     }
 
-    // De-initialize GUI
-    closeGui();
+    // De-initialize program
+    CloseWindow();CloseWindow();
+    freeMemory();
 
     // end succesfully
     return 0;

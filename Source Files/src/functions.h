@@ -7,32 +7,33 @@
 #include "../raylib/src/raylib.h"
 #include "../raygui/src/raygui.h"
 
-// amount of lines that have to be assembled
-extern int lineCount;
-
 // new file
 extern FILE *newFile;
 
-// Function declarations -----------------------------------------------------------
+//-------------------------------------------------------------------------------------------------------------------//
+// GUI                                                                                                               //
+//-------------------------------------------------------------------------------------------------------------------//
 
-// Gui -----------------------------------------------------------------------------
-void beginDrawingUi(void);
-void endDrawingUi(void);
+// main gui call ------------------------------------------------------------------------
 void initGui(void);
 void updateGui(void);
 void drawGui(void);
-void closeGui(void);
 
-// Gui elements --------------------------------------------------------------------
-
-// button struct
+// button struct ------------------------------------------------------------------------
 typedef struct {
     Rectangle bounds;
     const char *text;
     bool clicked;
 } button;
 
-//buttons
+// window struct ------------------------------------------------------------------------
+typedef struct {
+    Rectangle bounds;
+    const char *text;
+    bool active;
+} window;
+
+//buttons -------------------------------------------------------------------------------
 extern button openFileButton;
 extern button convertToBinaryButton;
 extern button saveBinaryButton;
@@ -41,7 +42,20 @@ extern button convertToHexButton;
 extern button saveHexButton;
 extern button copyHexButton;
 
-// General functions --------------------------------------------------------------
+// windows ------------------------------------------------------------------------------
+extern window loadFileWindow;
+extern window saveBinaryWindow;
+extern window saveHexWindow; 
+
+// Gui functions ------------------------------------------------------------------------
+void textScrollWindow(Rectangle controlBounds, const char *textField, int textLines, int *scrollDistance, bool *scrollActive);
+void openFileWindow();
+void saveFileWindow(char type);
+
+//-------------------------------------------------------------------------------------------------------------------//
+// Background Functions                                                                                              //
+//-------------------------------------------------------------------------------------------------------------------//
+void freeMemory(void);
 /*
 FILE *openFileWindow(void);
 char **convertToBinary(void);
