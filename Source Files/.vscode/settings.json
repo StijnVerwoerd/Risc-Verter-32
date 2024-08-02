@@ -6,6 +6,9 @@
         "string.h": "c",
         "stddef.h": "c",
         "style_terminal.h": "c",
-        "functions.h": "c"
+        "functions.h": "c",
+        "style_dark.h": "c",
+        "gui_window_file_dialog.h": "c",
+        "raylib.h": "c"
     }
 }

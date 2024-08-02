@@ -1,28 +1,36 @@
-#include "functions.h"
-#include "../raylib/src/raylib.h"
-#include "../raygui/src/raygui.h"
+//-------------------------------------------------------------------------------------------------------------------//
+// Libraries & definitions                                                                                           //
+//-------------------------------------------------------------------------------------------------------------------//
 
-int main (void) {
+    #include "functions.h"
+    #include "../raylib/src/raylib.h"
+    #include "../raygui/src/raygui.h"
 
-    // Initialize GUI
-    initGui();
+//-------------------------------------------------------------------------------------------------------------------//
+// Main Program                                                                                                      //
+//-------------------------------------------------------------------------------------------------------------------//
 
-    // Main program loop
-    while (!WindowShouldClose()) { // exits if window is closed or escape is pressed
+    int main (void) {
+        
+        // Initialize GUI
+        initGui();
 
-        BeginDrawing();
-        updateGui();
-        drawGui();
-        EndDrawing();
+        // Main program loop
+        while (!WindowShouldClose()) { // exits if window is closed or escape is pressed
+
+            updateGui();
+            BeginDrawing();
+            drawGui();
+            EndDrawing();
+        }
+
+        // De-initialize program
+        CloseWindow();
+        freeMemory();
+
+        // end succesfully
+        return 0;
     }
-
-    // De-initialize program
-    CloseWindow();CloseWindow();
-    freeMemory();
-
-    // end succesfully
-    return 0;
-
 
 
     //-------------------------------------------------------------------------------------------
@@ -47,7 +55,7 @@ int main (void) {
     // Close file and exit program succesfully
     return 0;
     */
-}
+
 
 
 
