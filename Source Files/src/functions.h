@@ -8,95 +8,82 @@
 #include "../raygui/src/raygui.h"
 #include "../raygui/src/gui_window_file_dialog.h"
 
-
-// new file
-extern FILE *newFile;
-
 //-------------------------------------------------------------------------------------------------------------------//
-// GUI                                                                                                               //
+// Variables                                                                                                         //
 //-------------------------------------------------------------------------------------------------------------------//
 
-    // main gui call ------------------------------------------------------------------------
-    void initGui(void);
-    void updateGui(void);
-    void drawGui(void);
+// button struct 
+//---------------------------------------------------------------------------------------
+typedef struct {
+    Rectangle bounds;
+    const char *text;
+    bool clicked;
+} button;
 
-    // button struct ------------------------------------------------------------------------
-    typedef struct {
-        Rectangle bounds;
-        const char *text;
-        bool clicked;
-    } button;
+// window struct
+//---------------------------------------------------------------------------------------
+typedef struct {
+    Rectangle bounds;
+    const char *text;
+    bool active;
+} window;
 
-    // window struct ------------------------------------------------------------------------
+//buttons
+//---------------------------------------------------------------------------------------
+extern button openFileButton;
+extern button convertToBinaryButton;
+extern button saveBinaryButton;
+extern button copyBinaryButton;
+extern button convertToHexButton;
+extern button saveHexButton;
+extern button copyHexButton;
 
-    typedef struct {
-        Rectangle bounds;
-        const char *text;
-        bool active;
-    } window;
+// windows 
+//---------------------------------------------------------------------------------------
+extern window loadFileWindow;
+extern window saveBinaryWindow;
+extern window saveHexWindow; 
 
-    //buttons -------------------------------------------------------------------------------
-
-    extern button openFileButton;
-    extern button convertToBinaryButton;
-    extern button saveBinaryButton;
-    extern button copyBinaryButton;
-    extern button convertToHexButton;
-    extern button saveHexButton;
-    extern button copyHexButton;
-
-    // windows ------------------------------------------------------------------------------
-
-    extern window loadFileWindow;
-    extern window saveBinaryWindow;
-    extern window saveHexWindow; 
-
-    // Gui functions ------------------------------------------------------------------------
-
-    void textScrollWindow(Rectangle controlBounds, const char *textField, int textLines, int *scrollDistance, bool *scrollActive);  // opens a scrollbox with text
-    void openFileWindow();                                                                                                          // opens a load file window
-    void saveFileWindow(char type);                                                                                                 // opens a save file window, type is 'h' for hex and 'b' for binary
 
 //-------------------------------------------------------------------------------------------------------------------//
-// Background Functions                                                                                              //
+// Functions                                                                                                         //
 //-------------------------------------------------------------------------------------------------------------------//
-    void freeMemory(void);
-    char *combineStrings(char **strings, int count);
-    /*
-    FILE *openFileWindow(void);
-    char **convertToBinary(void);
-    char **convertToHex(void);
-    */  
 
-    // --------------------------------------------------------------------------------
+// Gui functions
+//---------------------------------------------------------------------------------------
+void initGui(void);                                                 // Initializes Gui values & elements
+void updateGui(void);                                               // Updates the Gui elements based on (button) triggers
+void drawGui(void);                                                 // Draws the Gui elements
+void textScrollWindow(                                              // opens a scrollbox with text
+    Rectangle controlBounds, const char *textField, 
+    int textLines, int *scrollDistance, bool *scrollActive);  
+void openFileWindow();                                              // Load new file window
+void saveFileWindow(char type);                                     // opens a save file window, type is 'h' for hex and 'b' for binary
 
-    // To point out the obvious, this requests a user for the file
-    char *requestFileName(void); 
-    //opens or creates the assembly instructions file "r" for read "w" for write "a" for add data to file
-    FILE *openFile(char *fileToOpen, const char *mode); 
-    //checks the format of the instruction
-    int checkFormat(const char *instruction); 
-    //creates a new file name
-    char *newFileNameGenerator(char *tempName);
-    // reads each line and stores it in an array 
-    char **readFile(FILE *fileToRead, int *lineCount);
-    //goes through each line, deconstructs it and writes it to the new file
-    void assembleLines(char **arrayOfLines, FILE *newFile, int lineCount);
-    // turns a single string into an array of individual strings
-    char **rearrangeString(const char *string); 
-    // turns an integer in string format into a binary code in string format
-    char *intToBinaryStr(char *intStr, int bitLen, char *buffer);
-    // shuffles the digits according to the format rules
-    char **binaryStringShuffler(char *binaryString);
+// String manipulation functions
+//---------------------------------------------------------------------------------------
+void freeMemory(void);                                              // Frees all allocated heap memory
+char *combineStrings(char **strings, int count);                    // Combines an array of strings into one long string seperated by '\n' tokens
+char *createNumberedString(int start, int end);                     // Creates a string of nummbers (i.e. 1. 2. 3. etc.) that can be placed besides the text
+char **binToHexConvert(char **binaryFileData,  int lines);          // converts an array of binary strings to an array of hexadecimal strings
+char **rearrangeString(const char *string);                         // tokenizes an instruction string
+char *intToBinaryStr(char *intStr, int bitLen, char *buffer);       // turns an integer in string format into a binary code in string format
 
+// File functions
+//---------------------------------------------------------------------------------------
+FILE *openFile(char *fileToOpen, const char *mode);                 // opens or creates the assembly instructions file "r" for read "w" for write "a" for add data to file 
+int checkFormat(const char *instruction);                           // checks the format of the instruction 
+char *newFileNameGenerator(char *tempName, char type);              // creates a new file name
+char **readFile(FILE *fileToRead, int *lineCount);                  // reads each line inside the file and stores it in an array 
 
-    // Assembler functions 
-    void AssemblerTypeR(char **strings, FILE *newFile); 
-    void AssemblerTypeS(char **strings, FILE *newFile);
-    void AssemblerTypeI(char **strings, FILE *newFile);
-    void AssemblerTypeSB(char **strings, FILE *newFile);
-    void AssemblerTypeU(char **strings, FILE *newFile); 
-    void AssemblerTypeUJ(char **strings, FILE *newFile);
+// Assembler functions
+//--------------------------------------------------------------------------------------- 
+char **assembleLines(char **arrayOfLines, int lineCount);           // goes through each line, deconstructs it and writes it to the new file
+char *AssemblerTypeR(char **strings);                               // Assembles each line in the R format                               
+char *AssemblerTypeS(char **strings);                               // Assembles each line in the S format
+char *AssemblerTypeI(char **strings);                               // Assembles each line in the I format
+char *AssemblerTypeSB(char **strings);                              // Assembles each line in the SB format
+char *AssemblerTypeU(char **strings);                               // Assembles each line in the U format
+char *AssemblerTypeUJ(char **strings);                              // Assembles each line in the UJ format
 
 #endif
