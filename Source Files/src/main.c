@@ -4,7 +4,7 @@
 
     #include "functions.h"
     #include "../raylib/src/raylib.h"
-    #include "../raygui/src/raygui.h"
+    #include "raygui.h"
 
 //-------------------------------------------------------------------------------------------------------------------//
 // Main Program                                                                                                      //

@@ -11,11 +11,11 @@
 #include "formats.h"
 #include "../raylib/src/raylib.h"
 #define RAYGUI_IMPLEMENTATION
-#include "../raygui/src/raygui.h"
+#include "raygui.h"
 #undef RAYGUI_IMPLEMENTATION
 #define GUI_WINDOW_FILE_DIALOG_IMPLEMENTATION
-#include "../raygui/src/gui_window_file_dialog.h"
-#include "../raygui/styles/dark/style_dark.h"
+#include "gui_window_file_dialog.h"
+#include "dark/style_dark.h"
 
 //-------------------------------------------------------------------------------------------------------------------//
 // Setup & global variables                                                                                          //
@@ -33,13 +33,13 @@ char fileNameToLoad[512];
 
 // initialize buttons 
 //---------------------------------------------------------------------------------------
-button openFileButton = (button){ .bounds = (Rectangle){28, 24, 352, 24}, .text = "OPEN FILE", .clicked = false};
-button convertToBinaryButton = (button){ .bounds = (Rectangle){404, 24, 228, 24}, .text = "CONVERT TO BINARY", .clicked = false};
-button convertToHexButton = (button){ .bounds = (Rectangle){404, 408, 228, 24}, .text = "CONVERT TO HEX", .clicked = false};
+button openFileButton = (button){ .bounds = (Rectangle){24, 24, 360, 24}, .text = "OPEN FILE", .clicked = false};
+button convertToBinaryButton = (button){ .bounds = (Rectangle){400, 24, 228, 24}, .text = "CONVERT TO BINARY", .clicked = false};
+button convertToHexButton = (button){ .bounds = (Rectangle){400, 408, 228, 24}, .text = "CONVERT TO HEX", .clicked = false};
 button saveBinaryButton = (button){ .bounds = (Rectangle){634, 24, 60, 24}, .text = "SAVE", .clicked = false};
-button copyBinaryButton = (button){ .bounds = (Rectangle){696, 24, 60, 24}, .text = "COPY", .clicked = false};
+button copyBinaryButton = (button){ .bounds = (Rectangle){700, 24, 60, 24}, .text = "COPY", .clicked = false};
 button saveHexButton = (button){ .bounds = (Rectangle){634, 408, 60, 24}, .text = "SAVE", .clicked = false};
-button copyHexButton = (button){ .bounds = (Rectangle){696, 408, 60, 24}, .text = "COPY", .clicked = false};
+button copyHexButton = (button){ .bounds = (Rectangle){700, 408, 60, 24}, .text = "COPY", .clicked = false};
 bool guiButtonsActive = true;
 
 // initialize file windows 
@@ -87,7 +87,7 @@ void initGui(void) {
     // Window initialization 
     //---------------------------------------------------------------------------------------
     SetTargetFPS(60);
-    InitWindow(screenWidth, screenHeight, "RV32I Assembler");
+    InitWindow(screenWidth, screenHeight, "Risc-Verter 32");
     GuiLoadStyleDark();
 
     // Custom file dialog
@@ -114,6 +114,7 @@ void updateGui(void) {
                 binaryFileData = assembleLines(fileData, lineCount);
                 processedBinaryFileData = combineStrings(binaryFileData, lineCount);
                 binaryLoaded = true;
+                convertToHexButton.clicked = false;
             }
         }
         if (GuiButton(convertToHexButton.bounds, convertToHexButton.text)) {
@@ -208,7 +209,7 @@ void saveFileWindow(char type) {
     //---------------------------------------------------------------------------------------
     int borderColor;
     if (GetMouseX() > (screenWidth/2)-234 && GetMouseX() < (screenWidth/2)+234 && GetMouseY() > (screenHeight/2)-16 && GetMouseY() < (screenHeight/2)+16) {
-        textPosX = GetMouseX() - 200;
+        textPosX = (GetMouseX()*2) - 512;
         borderColor = BORDER_COLOR_FOCUSED;
     } else {
         borderColor = BORDER_COLOR_NORMAL;
@@ -217,7 +218,7 @@ void saveFileWindow(char type) {
     GuiDrawText("FILEPATH:", (Rectangle){(screenWidth/2)-234, (screenHeight/2)-32, 100, 24}, 0, WHITE);
     GuiDrawRectangle((Rectangle){(screenWidth/2)-234, (screenHeight/2)-8, 468, 24}, 1, GetColor(GuiGetStyle(DEFAULT, borderColor)), BLANK);
     BeginScissorMode((screenWidth/2)-234, (screenHeight/2)-16, 468, 32);
-    GuiDrawText(fileName, (Rectangle){textPosX, (screenHeight/2) -8, 1000, 24}, 0, GREEN);
+        GuiDrawText(fileName, (Rectangle){textPosX, (screenHeight/2) -8, 1000, 24}, 0, GREEN);
     EndScissorMode();
     
     // Save data to file
@@ -309,27 +310,15 @@ void drawGui(void) {
         // Draw background color 
         //---------------------------------------------------------------------------------------
         ClearBackground(GetColor(GuiGetStyle(DEFAULT, BACKGROUND_COLOR)));
-
-        // Rectangle colors 
-        //---------------------------------------------------------------------------------------
-        int Color1 = 150;
-        int Color2 = 75;
-        int Color3 = (Color1 + Color2 - 50) / 2;
         
-        // draw dynamic gradient background 
+        // draw gradient background 
         //---------------------------------------------------------------------------------------
         DrawRectangleGradientEx((Rectangle){0,0,screenWidth,screenHeight},
-            (Color){50, 150, 100, 50},
-            (Color){100, 50, 150, 50},
-            (Color){150, 100, 50, 50},
-            (Color){50, 150, 100, 50});
+            (Color){50, 150, 100, 75},
+            (Color){100, 50, 150, 75},
+            (Color){150, 100, 50, 75},
+            (Color){50, 150, 100, 75});
 
-        // draw button panels 
-        //---------------------------------------------------------------------------------------
-        GuiDrawRectangle((Rectangle){400, 20, 360, 32}, 2, (Color){Color1, Color2, Color3, Color3},(Color){Color1, Color2, Color3, 150});    // binary button box
-        GuiDrawRectangle((Rectangle){400, 404, 360, 32}, 2, (Color){Color1, Color2, Color3, Color3},(Color){Color1, Color2, Color3, 150});   // hexadecimal button box
-        GuiDrawRectangle((Rectangle){24, 20, 360, 32}, 2, (Color){Color1, Color2, Color3, Color3},(Color){Color1, Color2, Color3, 150});      // open file box
-        
         // Text box groups  
         //---------------------------------------------------------------------------------------
         GuiGroupBox((Rectangle){24, 64, 360, 704 }, "ASSEMBLY CODE");
@@ -364,9 +353,9 @@ void drawGui(void) {
                 textScrollWindow((Rectangle){400, 448, 360, 320}, processedHexFileData, lineCount, &scrollDistanceHex, &hexScrollActive);
             } else if (!binaryLoaded && lineCount == 0) {
                 GuiDrawText("Open a file first.", (Rectangle) {524, 584, 200, 24}, 0, RED);
-            }
             } else if (!binaryLoaded && lineCount > 0){
                 GuiDrawText("Convert to binary first.", (Rectangle) {500, 584, 200, 24}, 0, RED);
+            }
         }
         if (fileDialogState.SelectFilePressed) {
             if (lineCount != 0){
@@ -558,7 +547,7 @@ char **readFile(FILE *fileToRead, int *lineCount) {
     //---------------------------------------------------------------------------------------
     *lineCount = 0;
     int arraySize = 10;
-    char buffer[32];
+    char buffer[256];
     
     char **instructionLines = malloc(arraySize * sizeof(char*));
     if (!instructionLines) {
@@ -568,9 +557,17 @@ char **readFile(FILE *fileToRead, int *lineCount) {
 
     // Main file read loop
     //---------------------------------------------------------------------------------------
-    while (fgets(buffer, 32, fileToRead)) {
+    while (fgets(buffer, 256, fileToRead)) {
+
         // Remove the newline character if present
         buffer[strcspn(buffer, "\n")] = '\0';
+        buffer[strcspn(buffer, "#")] = '\0';
+
+        if (buffer[0] == '\0') {
+            continue;
+        }
+
+
 
         // Resize array if needed
         if (*lineCount >= arraySize) {

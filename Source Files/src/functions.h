@@ -5,8 +5,8 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include "../raylib/src/raylib.h"
-#include "../raygui/src/raygui.h"
-#include "../raygui/src/gui_window_file_dialog.h"
+#include "raygui.h"
+#include "gui_window_file_dialog.h"
 
 //-------------------------------------------------------------------------------------------------------------------//
 // Variables                                                                                                         //

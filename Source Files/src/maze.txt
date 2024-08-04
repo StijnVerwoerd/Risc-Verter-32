@@ -1,11 +1,15 @@
+SW X3, 3(X3)
+SW X31, 16(X15) # I can put quite some comments behind here
 ADDI X15, X0, 512
-LW X31, 472(X0)
+LW X31, 472(X0) # let's test this
+
 SW X31, 16(X15)
 LW X31, 476(X0)
 SW X31, 20(X15)
 LW X31, 480(X0)
 SW X31, 24(X15)
 LW X31, 484(X0)
+
 SW X31, 28(X15)
 LW X31, 488(X0)
 SW X31, 32(X15)
@@ -79,3 +83,5 @@ SW X31, 28(X15)
 LW X31, 508(X0)
 SW X31, 32(X15)
 BEQ X0, X0, -56
+
+
