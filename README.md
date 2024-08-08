@@ -1,95 +1,82 @@
-# 32-bit RISC-V Assembler 
+<p align="center">
+    <img src="Images/R-VERTER.png" alt="R-VERTER_LOGO" width="200" height="165">
+</p>
 
-A simple assembler
+<h1 align="center">Risc-Verter 32</h1>
 
-* Only supports assembly to binary
-* Does not support labels
-* Only supports uppercase instructions with lowercases register
-* Does not support psuedo instructions
-* Does not support register aliases
+<p align="center">
+  A lightweight and minimalistic 32-bit RISC-V instruction converter for educational purposes
+</p>
 
-## To-do List
+&nbsp; 
 
-* Remove case sensitivity
-* Add support for register aliases and psuedo instructions
-* Add support for label decoding
-* Add support for binary to assembly
-* Add support for hexadecimal values, both ways
-* Refactor, clean up and improve code
-* Add an UI
+> **Features**
+* Convert instructions to both binary and hexadecimal numbers
+* Has support for all RV32I & RV32M Instructions
+* Can convert up to 4096 instructions at once
+* Can either copy or save the converted data
+* The ability to place comments in your .txt files
+* Offset calculation of labels
+* Extremely lightweight, at less than 0.5mb it can be taken and use anywhere.
 
+&nbsp; 
 
-## Program Data Flow
+> **To-do**
+* ~~Add a Gui~~
+* ~~Add support for conversion to hexadecimal~~
+* ~~Refactor, clean up and improve existing code~~
+* ~~Remove case sensitivity~~
+* ~~Add support for label offset calculation~~
+* ~~Add support for RV32M instructions~~
+* Add MS Windows support
+* Add label address visualization
+* Improve error handling
+* Add support for register aliases 
 
-```mermaid
-
-graph TD
-
-    start(Start)
-    file(Request file name)
-    error(error)
-    exit(Exit program)
-    openFile(Open file)
-    readLines(read and store
-    the lines in the file)
-    newFile(Create destination file)
-
-
-        analyzeFile{Is there 
-        an instruction to 
-        assemble?}
-        split(split instruction
-        and add to
-        temporary array)
-        format(check format)
-        function(call correct 
-        assembler function)
-        assembledFile(write assembled
-        instruction to file)
-
-    start --> file
-
-    file -- File or filepath 
-    does not exist --> error 
-
-    file --> openFile
-    error --> exit
-    openFile --> newFile
-    newFile --> readLines
-    readLines --> analyzeFile
-    analyzeFile -- Yes --> split
-    analyzeFile -- No --> exit
-    analyzeFile -- Incorrect code/syntax --> error
-    split --> format
-    format --> function
-    function --> assembledFile
-    assembledFile --> analyzeFile
-```
 
 
 ## How to use
 
-* Compile the program from the Source Code
-* Create a .txt a file and fill it with instructions in the style as shown below
+<p align="center">
+  <br>
+  <img src="Images/Preview.gif" alt="R-VERTER_LOGO" width="779" height="814">
+  <p align = "center">
+    <font size ="2">
+      <em> Gui created with <a href="https://github.com/raysan5/raygui/tree/master" target = "_blank" rel="nofollow"> Raygui </a>  and the 
+      <a href="https://github.com/raysan5/raylib" target = "_blank" rel="nofollow"> Raylib </a> library 
+      </em>
+    </font>
+  </p>
+  <br>
+</p>
 
-*remember that this program does not support labels yet, and you will have to calculate the offsets yourself at the time being*
+### Instructions
 
-* Run the program
-* Assign file
-* profit?
+Create a .txt a file and fill it with instructions in the style as shown below
+
+```MIPS
+ADD x4, x6, x8            # Comments can be placed anywhere after a '#'
+SW x4, 24, x28     
+:label
+blt x2, x3, 24
+
+# or like this 
+ADDI x5, x5, 345
+
+BEQ x3, x4, label:
+```
+
+The converter will interprete the above .txt input as follows
 
 ```MIPS
 ADD x4, x6, x8
 SW x4, 24, x28
+blt x2, x3, 24               
 ADDI x5, x5, 345
+BEQ x3, x4, -8
 ```
 
-Get's turned into
+Do note, labels can be up to 20 characters long and are case sensitive. 
 
-```
-00000000100000110000001000110011
-00000000010011100010110000100011
-00010101100100101000001010010011
-```
+Currently error handling is less than ideal but I intend to patch that soon. This means that you might encounter a segmentation fault when trying to convert something that can't be converted.
 
-After the program is done, you should have a file that is called *yourfilenamehere*_assembled.txt with your encoded instructions.

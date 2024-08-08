@@ -1,0 +1,9 @@
+[Desktop Entry]
+Version=0.2
+Type=Application
+Name=Risc-Verter 32
+Comment=A 32-bit RISC-V Converter
+Exec=./'Risc-Verter 32'
+Icon=./R-Verter.png
+Terminal=false
+path=.
