@@ -57,7 +57,7 @@ Create a .txt a file and fill it with instructions in the style as shown below
 ```t
 ADD x4, x6, x8            # Comments can be placed anywhere after a '#'
 SW x4, 24(x28)     
-:label
+label:
 blt x2, x3, 24
 
 # or like this 
