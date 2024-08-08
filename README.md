@@ -17,7 +17,6 @@
 * Can either copy or save the converted data
 * The ability to place comments in your .txt files
 * Offset calculation of labels
-* Extremely lightweight, at less than 0.5mb it can be taken and use anywhere.
 
 &nbsp; 
 
