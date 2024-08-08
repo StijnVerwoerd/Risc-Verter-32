@@ -2,39 +2,39 @@
 // Libraries & definitions                                                                                           //
 //-------------------------------------------------------------------------------------------------------------------//
 
-    #include "functions.h"
-    #include "../raylib/src/raylib.h"
-    #include "raygui.h"
+#include "functions.h"
+#include "../raylib/src/raylib.h"
+#include "../raygui_edit/raygui.h"
 
 //-------------------------------------------------------------------------------------------------------------------//
 // Main Program                                                                                                      //
 //-------------------------------------------------------------------------------------------------------------------//
 
-    int main (void) {
-        
-        // Initialize GUI
-        //---------------------------------------------------------------------------------------
-        initGui();
+int main (void) {
+    
+    // Initialize GUI
+    //---------------------------------------------------------------------------------------
+    initGui();
 
-        // Main program loop
-        //---------------------------------------------------------------------------------------
-        while (!WindowShouldClose()) { // exits if window is closed or escape is pressed
+    // Main program loop
+    //---------------------------------------------------------------------------------------
+    while (!WindowShouldClose()) { // exits if window is closed or escape is pressed
 
-            updateGui();
-            BeginDrawing();
-            drawGui();
-            EndDrawing();
-        }
-
-        // De-initialize program
-        //---------------------------------------------------------------------------------------
-        CloseWindow();
-        freeMemory();
-
-        // end succesfully
-        //---------------------------------------------------------------------------------------
-        return 0;
+        updateGui();
+        BeginDrawing();
+        drawGui();
+        EndDrawing();
     }
+
+    // De-initialize program
+    //---------------------------------------------------------------------------------------
+    CloseWindow();
+    freeMemory();
+
+    // end succesfully
+    //---------------------------------------------------------------------------------------
+    return 0;
+}
 
 
 

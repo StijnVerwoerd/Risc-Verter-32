@@ -1,5 +1,5 @@
 <p align="center">
-    <img src="R-VERTER.png" alt="R-VERTER_LOGO" width="200" height="165">
+    <img src="Images/R-VERTER.png" alt="R-VERTER_LOGO" width="200" height="165">
 </p>
 
 <h1 align="center">Risc-Verter 32</h1>
@@ -8,71 +8,75 @@
   A lightweight and minimalistic 32-bit RISC-V instruction converter for educational purposes
 </p>
 
+&nbsp; 
 
 > **Features**
-* Gui created with the [**Raygui**](https://github.com/raysan5/raygui/tree/master) library
-* Has support for all RV32I Instructions
+* Convert instructions to both binary and hexadecimal numbers
+* Has support for all RV32I & RV32M Instructions
 * Can convert up to 4096 instructions at once
 * Can either copy or save the converted data
-* Comments can be placed behind instructions  in a text editor with the '#' symbol, the program won't load or display them
-* When you save the file in a text editor it will update the values live when the file is loaded
+* The ability to place comments in your .txt files
+* Offset calculation of labels
+* Extremely lightweight, at less than 0.5mb it can be taken and use anywhere.
+
+&nbsp; 
 
 > **To-do**
 * ~~Add a Gui~~
 * ~~Add support for conversion to hexadecimal~~
 * ~~Refactor, clean up and improve existing code~~
-* Make sure empty lines do not get read instead of becoming a NULL pointer
+* ~~Remove case sensitivity~~
+* ~~Add support for label offset calculation~~
+* ~~Add support for RV32M instructions~~
+* Add MS Windows support
+* Add label address visualization
+* Improve error handling
 * Add support for register aliases 
-* Add support for RV32M instructions
-* Add support for psuedo instructions
-* Add support for label decoding
-* Remove case sensitivity
 
 
 
 ## How to use
 
 <p align="center">
-  <img src="Preview.gif" alt="R-VERTER_LOGO" width="779" height="814">
+  <br>
+  <img src="Images/Preview.gif" alt="R-VERTER_LOGO" width="779" height="814">
+  <p align = "center">
+    <font size ="2">
+      <em> Gui created with <a href="https://github.com/raysan5/raygui/tree/master" target = "_blank" rel="nofollow"> Raygui </a>  and the 
+      <a href="https://github.com/raysan5/raylib" target = "_blank" rel="nofollow"> Raylib </a> library 
+      </em>
+    </font>
+  </p>
+  <br>
 </p>
+
+### Instructions
 
 Create a .txt a file and fill it with instructions in the style as shown below
 
 ```MIPS
-example code:
+ADD x4, x6, x8            # Comments can be placed anywhere after a '#'
+SW x4, 24, x28     
+:label
+blt x2, x3, 24
 
+# or like this 
+ADDI x5, x5, 345
+
+BEQ x3, x4, label:
+```
+
+The converter will interprete the above .txt input as follows
+
+```MIPS
 ADD x4, x6, x8
 SW x4, 24, x28
+blt x2, x3, 24               
 ADDI x5, x5, 345
+BEQ x3, x4, -8
 ```
 
-*remember that this program does not support labels yet, and you will have to calculate the offsets yourself at the time being*
+Do note, labels can be up to 20 characters long and are case sensitive. 
 
-## Assembler Data Flow
-
-```mermaid
-
-graph TD
-
-        analyzeFile{Is there 
-        an instruction to 
-        assemble?}
-        split(split instruction 
-        into tokens and add 
-        to temporary array)
-        format(check format)
-        function(call correct 
-        assembler function)
-        assembledFile(write assembled
-        instruction to 
-        heap memory)
-
-    analyzeFile -- Yes --> split
-    analyzeFile -- No --> exit
-    analyzeFile -- Incorrect code/syntax --> error
-    split --> format
-    format --> function
-    function --> assembledFile
-    assembledFile --> analyzeFile
-```
+Currently error handling is less than ideal but I intend to patch that soon. This means that you might encounter a segmentation fault when trying to convert something that can't be converted.
 

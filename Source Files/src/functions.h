@@ -5,8 +5,8 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include "../raylib/src/raylib.h"
-#include "raygui.h"
-#include "gui_window_file_dialog.h"
+#include "../raygui_edit/raygui.h"
+#include "../raygui_edit/gui_window_file_dialog.h"
 
 //-------------------------------------------------------------------------------------------------------------------//
 // Variables                                                                                                         //
@@ -74,15 +74,15 @@ char *intToBinaryStr(char *intStr, int bitLen, char *buffer);       // turns an 
 FILE *openFile(char *fileToOpen, const char *mode);                 // opens or creates the assembly instructions file "r" for read "w" for write "a" for add data to file 
 int checkFormat(const char *instruction);                           // checks the format of the instruction 
 char *newFileNameGenerator(char *tempName, char type);              // creates a new file name
-char **readFile(FILE *fileToRead, int *lineCount);                  // reads each line inside the file and stores it in an array 
+char **readFile(FILE *fileToRead);                                  // reads each line inside the file and stores it in an array 
 
 // Assembler functions
 //--------------------------------------------------------------------------------------- 
-char **assembleLines(char **arrayOfLines, int lineCount);           // goes through each line, deconstructs it and writes it to the new file
+char **assembleLines(char **arrayOfLines);                          // goes through each line, deconstructs it and writes it to the new file
 char *AssemblerTypeR(char **strings);                               // Assembles each line in the R format                               
 char *AssemblerTypeS(char **strings);                               // Assembles each line in the S format
 char *AssemblerTypeI(char **strings);                               // Assembles each line in the I format
-char *AssemblerTypeSB(char **strings);                              // Assembles each line in the SB format
+char *AssemblerTypeSB(char **strings, int instructionNumber);       // Assembles each line in the SB format
 char *AssemblerTypeU(char **strings);                               // Assembles each line in the U format
 char *AssemblerTypeUJ(char **strings);                              // Assembles each line in the UJ format
 

@@ -11,11 +11,11 @@
 #include "formats.h"
 #include "../raylib/src/raylib.h"
 #define RAYGUI_IMPLEMENTATION
-#include "raygui.h"
+#include "../raygui_edit/raygui.h"
 #undef RAYGUI_IMPLEMENTATION
 #define GUI_WINDOW_FILE_DIALOG_IMPLEMENTATION
-#include "gui_window_file_dialog.h"
-#include "dark/style_dark.h"
+#include "../raygui_edit/gui_window_file_dialog.h"
+#include "../raygui_edit/dark/style_dark.h"
 
 //-------------------------------------------------------------------------------------------------------------------//
 // Setup & global variables                                                                                          //
@@ -57,6 +57,11 @@ bool scrollButtonPressed = false;
 bool assemblyScrollActive = false;
 bool binaryScrollActive = false;
 bool hexScrollActive = false;
+
+// Label data
+//---------------------------------------------------------------------------------------
+char labelAddress[1024][20];
+char labelPointer[1024][20];
 
 // amount of lines of code of the file to be assembled 
 //---------------------------------------------------------------------------------------
@@ -111,7 +116,7 @@ void updateGui(void) {
         if (GuiButton(convertToBinaryButton.bounds, convertToBinaryButton.text)) {
             convertToBinaryButton.clicked = true;
             if (fileData != NULL){
-                binaryFileData = assembleLines(fileData, lineCount);
+                binaryFileData = assembleLines(fileData);
                 processedBinaryFileData = combineStrings(binaryFileData, lineCount);
                 binaryLoaded = true;
                 convertToHexButton.clicked = false;
@@ -158,7 +163,7 @@ void updateGui(void) {
             // Load text 
             //---------------------------------------------------------------------------------------
             FILE *fileToAssemble = openFile(fileNameToLoad, "r");
-            fileData = readFile(fileToAssemble, &lineCount);
+            fileData = readFile(fileToAssemble);
             processedFileData = combineStrings(fileData, lineCount);
 
             // create number list 
@@ -490,8 +495,8 @@ char *combineStrings(char **strings, int count) {
 }
 
 FILE *openFile(char *fileToOpen, const char *mode) { 
-    FILE *ASMfile = fopen(fileToOpen, mode);
-    if (ASMfile ==  NULL) {
+    FILE *file = fopen(fileToOpen, mode);
+    if (file ==  NULL) {
         if (strcmp(mode, "r") == 0){
             fprintf(stderr,"Could not open file.\n");
         } else if (strcmp(mode, "w") == 0) {
@@ -499,7 +504,7 @@ FILE *openFile(char *fileToOpen, const char *mode) {
         }
         exit(2); // Exit if file cannot be opened or created
     }
-    return ASMfile;
+    return file;
 }
 
 char *newFileNameGenerator(char *tempName, char type) {
@@ -541,11 +546,11 @@ char *newFileNameGenerator(char *tempName, char type) {
     return newString;
 }
 
-char **readFile(FILE *fileToRead, int *lineCount) {
+char **readFile(FILE *fileToRead) {
     
     // Initializes variables & memory
     //---------------------------------------------------------------------------------------
-    *lineCount = 0;
+    lineCount = 0;
     int arraySize = 10;
     char buffer[256];
     
@@ -557,25 +562,50 @@ char **readFile(FILE *fileToRead, int *lineCount) {
 
     // Main file read loop
     //---------------------------------------------------------------------------------------
-    while (fgets(buffer, 256, fileToRead)) {
+    while (fgets(buffer, sizeof(buffer), fileToRead)) {
 
-        // Remove the newline character if present
+        // check for labels
+        int lastSpace = 0;
+        int labelColon = strcspn(buffer, ":"); 
+        int endOfString = strcspn(buffer, "\0");
+
+        // NULL terminate string at following chars
         buffer[strcspn(buffer, "\n")] = '\0';
         buffer[strcspn(buffer, "#")] = '\0';
+        buffer[strcspn(buffer, ":")] = '\0';
 
-        if (buffer[0] == '\0') {
+        // if the first char is NULL or an empty space, skip the line
+        if (buffer[0] == '\0' || buffer[0] == ' ') {
             continue;
         }
 
+        // place labels in label memory
+        if (labelColon != endOfString) {
+            for (int i = 0; i < labelColon; i++) {
+                if (buffer[i] == ' ') {
+                    lastSpace = i;
+                }
+            }
+            if (lastSpace == 0) {
+                strncpy(labelAddress[lineCount], buffer, labelColon);
+                buffer[labelColon+1] = '\0';
+            } else {
+                strncpy(labelPointer[lineCount], buffer + lastSpace + 1, labelColon - lastSpace);
+            }
+        } 
 
+        // if there is a label address, don't load in the line
+        if (lastSpace == 0 && labelColon != endOfString) {
+            continue;
+        } 
 
         // Resize array if needed
-        if (*lineCount >= arraySize) {
+        if (lineCount >= arraySize) {
             arraySize *= 2;
             char **temp = realloc(instructionLines, arraySize * sizeof(char *));
             if (temp == NULL) {
                 fprintf(stderr, "Memory allocation failed\n");
-                for (size_t i = 0; i < *lineCount; i++) {
+                for (int i = 0; i < lineCount; i++) {
                     free(instructionLines[i]);
                 }
                 free(instructionLines);
@@ -586,23 +616,24 @@ char **readFile(FILE *fileToRead, int *lineCount) {
         }
 
         // Adds the buffer to the instructionLines
-        instructionLines[*lineCount] = strdup(buffer);
-        if (instructionLines[*lineCount] == NULL) {
+        instructionLines[lineCount] = strdup(buffer);
+        if (instructionLines[lineCount] == NULL) {
             perror("Failed to duplicate string");
-            for (size_t i = 0; i < *lineCount; i++) {
+            for (int i = 0; i < lineCount; i++) {
                 free(instructionLines[i]);
             }
             free(instructionLines);
             fclose(fileToRead);
             exit(4);
         }
-        *lineCount = *lineCount + 1;
+        lineCount = lineCount + 1;
     }
     fclose(fileToRead);
+
     return(instructionLines);
 }
 
-char **assembleLines(char **arrayOfLines, int lineCount) {
+char **assembleLines(char **arrayOfLines) {
     
     // Initializes variables & memory
     //---------------------------------------------------------------------------------------
@@ -633,6 +664,7 @@ char **assembleLines(char **arrayOfLines, int lineCount) {
         //---------------------------------------------------------------------------------------
         char **tempInstruction = rearrangeString(arrayOfLines[i]);
 
+
         // Allocate memory for each line in binaryTempFileData
         //---------------------------------------------------------------------------------------
         binaryTempFileData[i] = malloc(33 * sizeof(char));
@@ -640,33 +672,37 @@ char **assembleLines(char **arrayOfLines, int lineCount) {
             fprintf(stderr, "Memory allocation failed\n");
             exit(4);
         }
-        // checks the format type of the instruction
+
+        // makes the instruction uppercase if lowercase
         //---------------------------------------------------------------------------------------
-        int format = checkFormat(tempInstruction[0]); 
+        for (int i = 0; i < sizeof(tempInstruction[0]); i++) {
+            tempInstruction[0][i] = toupper(tempInstruction[0][i]);
+        }
 
         // Calls the right assembler function depending on format of the instruction
         //---------------------------------------------------------------------------------------
-        switch (format) {
-            case 0:
+        switch (checkFormat(tempInstruction[0])) {
+            case 1:
                 strncpy(binaryTempFileData[i], AssemblerTypeR(tempInstruction), 33);
                 break;
-            case 1:
+            case 2:
                 strncpy(binaryTempFileData[i], AssemblerTypeS(tempInstruction), 33);
                 break;
-            case 2:
+            case 3:
                 strncpy(binaryTempFileData[i], AssemblerTypeI(tempInstruction), 33);
                 break;
-            case 3:
-                strncpy(binaryTempFileData[i], AssemblerTypeSB(tempInstruction), 33);
-                break;
             case 4:
-                strncpy(binaryTempFileData[i], AssemblerTypeU(tempInstruction), 33);
+                strncpy(binaryTempFileData[i], AssemblerTypeSB(tempInstruction, i), 33);
                 break;
             case 5:
+                strncpy(binaryTempFileData[i], AssemblerTypeU(tempInstruction), 33);
+                break;
+            case 6:
                 strncpy(binaryTempFileData[i], AssemblerTypeUJ(tempInstruction), 33);
                 break;
-            default:
-                exit(5);
+            default: // if format is not found
+                continue;
+                break;
 
         }
         free(tempInstruction);
@@ -701,17 +737,20 @@ char **rearrangeString(const char *string) {
     }
     free(stringCopy);
 
-    // Make sure the array is null-terminated if the instruction is shorter than 4 tokens
+    // null terminate array
     //---------------------------------------------------------------------------------------
-    if (i < 3) {
-        dissectedString[i] = '\0';
-    }
+    dissectedString[i] = '\0';
 
-    //return splitted string
     return dissectedString;
 }
 
 int checkFormat(const char *instruction) { 
+
+    // format variables
+    //---------------------------------------------------------------------------------------
+    bool found = false;
+    int format;
+
 
     // Loops through all formats and compare the instruction to a look up map of instructions
     //---------------------------------------------------------------------------------------
@@ -721,9 +760,18 @@ int checkFormat(const char *instruction) {
                 fprintf(stderr, "Error: pFormats[%d][%d] is NULL\n", i, j);
                 continue;}
             if (strcmp(instruction, pFormats[i][j]) == 0) { 
-                return formatNumber[i];
+                found = true;
+                format = formatNumber[i];
             } 
         }
+    }
+
+    // if the instruction is found, return the format
+    //---------------------------------------------------------------------------------------
+    if (found) {
+        return format;
+    } else {
+        return 0;
     }
 }
 
@@ -882,12 +930,12 @@ char* AssemblerTypeR(char **strings) {
     for (int i = 0; i < FORMATLEN; i++) {
         for (int j = 0; j < formatSizes[i]; j++) {
             if (strcmp(strings[0], pFormats[i][j]) == 0) { 
-                strncpy(assembledInstruction, RformatFunct7[j], 7);         // funct7
-                strncpy(assembledInstruction + 7, rs2, 5);                  //rs2
-                strncpy(assembledInstruction + 12, rs1, 5);                 //rs1                
-                strncpy(assembledInstruction + 17, RformatFunct3[j], 3);    // funct3
-                strncpy(assembledInstruction + 20, rd, 5);                  //rd                
-                strncpy(assembledInstruction + 25, RformatOpcode[j], 7);    // Opcode
+                strncpy(assembledInstruction, RformatFunct7[j], 7);         
+                strncpy(assembledInstruction + 7, rs2, 5);                  
+                strncpy(assembledInstruction + 12, rs1, 5);                                 
+                strncpy(assembledInstruction + 17, RformatFunct3[j], 3);    
+                strncpy(assembledInstruction + 20, rd, 5);                                 
+                strncpy(assembledInstruction + 25, RformatOpcode[j], 7);    
             }
         }
     }
@@ -934,12 +982,12 @@ char* AssemblerTypeS(char **strings) {
     for (int i = 0; i < FORMATLEN; i++) {
         for (int j = 0; j < formatSizes[i]; j++) {
             if (strcmp(strings[0], pFormats[i][j]) == 0) { 
-                strncpy(assembledInstruction, imm5_11, 7);                  // imm 11:5
-                strncpy(assembledInstruction + 7, rs2, 5);                  // rs2
-                strncpy(assembledInstruction + 12, rs1, 5);                 // rs1                
-                strncpy(assembledInstruction + 17, SformatFunct3[j], 3);    // funct3
-                strncpy(assembledInstruction + 20, imm0_4, 5);              // imm 0:4                
-                strncpy(assembledInstruction + 25, SformatOpcode[j], 7);    // Opcode
+                strncpy(assembledInstruction, imm5_11, 7);                   
+                strncpy(assembledInstruction + 7, rs2, 5);                  
+                strncpy(assembledInstruction + 12, rs1, 5);                                 
+                strncpy(assembledInstruction + 17, SformatFunct3[j], 3);    
+                strncpy(assembledInstruction + 20, imm0_4, 5);                               
+                strncpy(assembledInstruction + 25, SformatOpcode[j], 7);    
             }
         }
     }
@@ -993,11 +1041,11 @@ char* AssemblerTypeI(char **strings) {
     for (int i = 0; i < FORMATLEN; i++) {
         for (int j = 0; j < formatSizes[i]; j++) {
             if (strcmp(strings[0], pFormats[i][j]) == 0) { 
-                strncpy(assembledInstruction, imm, 12);                     // imm 11:0
-                strncpy(assembledInstruction + 12, rs1, 5);                 // rs1                
-                strncpy(assembledInstruction + 17, IformatFunct3[j], 3);    // funct3
-                strncpy(assembledInstruction + 20, rd, 5);                  // rd                
-                strncpy(assembledInstruction + 25, IformatOpcode[j], 7);    // Opcode
+                strncpy(assembledInstruction, imm, 12);                     
+                strncpy(assembledInstruction + 12, rs1, 5);                              
+                strncpy(assembledInstruction + 17, IformatFunct3[j], 3);    
+                strncpy(assembledInstruction + 20, rd, 5);                              
+                strncpy(assembledInstruction + 25, IformatOpcode[j], 7);    
             }
         }
     }
@@ -1009,7 +1057,7 @@ char* AssemblerTypeI(char **strings) {
     return(assembledInstruction);
 }
 
-char* AssemblerTypeSB(char **strings) { 
+char* AssemblerTypeSB(char **strings, int instructionNumber) { 
 
     // Initialize variables & memory
     //---------------------------------------------------------------------------------------
@@ -1027,11 +1075,32 @@ char* AssemblerTypeSB(char **strings) {
     char rs2[6] = {0};
     char rs1[6] = {0};
 
+    // Check if branch instruction has a label
+    //---------------------------------------------------------------------------------------
+    bool foundLabel = false;
+    char labelInt[32];
+    for (int i = 0; i < lineCount; i++) {
+        if (labelAddress[i] != NULL && labelPointer[instructionNumber] != NULL){
+            if (strcmp(labelAddress[i], labelPointer[instructionNumber]) == 0) {
+                foundLabel = true;
+                if (i > instructionNumber) {
+                    sprintf(labelInt, "%d", ((i - instructionNumber) * 4));
+                } else {
+                    sprintf(labelInt, "-%d", ((instructionNumber - i) * 4));
+                }
+            }
+        }
+    }
+
     // Turns integer into binary string
     //---------------------------------------------------------------------------------------
     intToBinaryStr(strings[2], 5, rs2);
     intToBinaryStr(strings[1], 5, rs1);
-    intToBinaryStr(strings[3], 13, imm);
+    if (foundLabel) {
+        intToBinaryStr(labelInt, 13, imm);
+    } else {
+        intToBinaryStr(strings[3], 13, imm);
+    }
 
     // Put code that puts the correct part of the strings in each respective place
     //---------------------------------------------------------------------------------------
@@ -1049,14 +1118,14 @@ char* AssemblerTypeSB(char **strings) {
     for (int i = 0; i < FORMATLEN; i++) {
         for (int j = 0; j < formatSizes[i]; j++) {
             if (strcmp(strings[0], pFormats[i][j]) == 0) { 
-                strncpy(assembledInstruction, imm12, 1);                    // imm 12
-                strncpy(assembledInstruction + 1, imm5_10, 6);              // imm 10:5
-                strncpy(assembledInstruction + 7, rs2, 5);                  // rs2
-                strncpy(assembledInstruction + 12, rs1, 5);                 // rs1                
-                strncpy(assembledInstruction + 17, SBformatFunct3[j], 3);   // funct3
-                strncpy(assembledInstruction + 20, imm1_4, 4);              // imm 4:1 
-                strncpy(assembledInstruction + 24, imm11, 1);               // imm 11               
-                strncpy(assembledInstruction + 25, SBformatOpcode[j], 7);   // Opcode
+                strncpy(assembledInstruction, imm12, 1);                     
+                strncpy(assembledInstruction + 1, imm5_10, 6);               
+                strncpy(assembledInstruction + 7, rs2, 5);                
+                strncpy(assembledInstruction + 12, rs1, 5);                               
+                strncpy(assembledInstruction + 17, SBformatFunct3[j], 3);    
+                strncpy(assembledInstruction + 20, imm1_4, 4);                
+                strncpy(assembledInstruction + 24, imm11, 1);                               
+                strncpy(assembledInstruction + 25, SBformatOpcode[j], 7);    
             }
         }
     }
@@ -1129,13 +1198,13 @@ char* AssemblerTypeUJ(char **strings) {
 
     // Put code that puts the correct part of the strings in each respective place 
     //---------------------------------------------------------------------------------------
-    strncpy(imm20, imm, 1); // puts imm[0] in imm20
+    strncpy(imm20, imm, 1);             
     imm20[1] = '\0';
-    strncpy(imm12_19, imm + 1, 8); // puts imm[1] till imm[8] in imm12_19
+    strncpy(imm12_19, imm + 1, 8);      
     imm12_19[9] = '\0';
-    strncpy(imm11, imm + 9, 1); // puts imm[9] in imm11
+    strncpy(imm11, imm + 9, 1);         
     imm11[1] = '\0';
-    strncpy(imm1_10, imm + 10, 10); //puts imm[10] till imm[19] in imm1_10
+    strncpy(imm1_10, imm + 10, 10);    
     imm1_10[10] = '\0';
 
     // Find correct codes in formats and insert correct values in the final string 
