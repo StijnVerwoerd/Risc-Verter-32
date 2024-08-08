@@ -54,7 +54,7 @@
 
 Create a .txt a file and fill it with instructions in the style as shown below
 
-```MIPS
+```t
 ADD x4, x6, x8            # Comments can be placed anywhere after a '#'
 SW x4, 24, x28     
 :label
@@ -68,7 +68,7 @@ BEQ x3, x4, label:
 
 The converter will interprete the above .txt input as follows
 
-```MIPS
+```t
 ADD x4, x6, x8
 SW x4, 24, x28
 blt x2, x3, 24               
